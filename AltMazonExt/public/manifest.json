@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "AltMazon",
+    "version": "1.0.0",
+    "icons": {
+        "32": "icons32.png"
+    },
+    "background": {
+        "type": "module"
+    },
+    "action": {
+        "default_popup": "index.html",
+        "default_icon": {
+            "32": "icons32.png"
+        }
+    },
+    "permissions": [
+        "scripting",
+        "identity"
+    ],
+    "host_permissions": [
+        "https://*/*",
+        "http://*/*"
+    ],
+    "oauth2": {
+        "client_id": "581551084472-ea10ridnrcj05ja5bj21500dn9v0co6m.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsUQybPbhvQWjwPms1ojvLF8BheiQgmTSsg3d6SftkEhk4nTq4Zu5Phuh6kokMJs0MZnbfbEMGZ9U/nLAGMs++RZum44N2Rq/PcpNdRcfhrrgNShBcIGaZy8nhodc7848uyn7mP889V3VIPClhlViTBcem5xJPx1cBgMuzEAoVw1mqb0b9zk5ROD8TkDEUs29O5USPhMEhUnTlX3WYlMhmcHkDYsOMP1FjEwlPzp4Lz1xg5b2SMjeQ4qg5UUn4veBEGL9zeIob8lHnvm0KRPvOI7FbZ1yBUURsB5KgZ+Qa6xSsyqCYBm9FzIQQ5MNshAr/Jqoc8cxXAQDRxhSzfxgTwIDAQAB"
+}
