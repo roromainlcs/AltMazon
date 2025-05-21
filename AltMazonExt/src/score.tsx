@@ -3,6 +3,7 @@ import "./styles/score.css";
 import { voteAltShop } from "./backRequest";
 
 interface VoteButtonsProps {
+  defaultUserVote: number;
   initialVotes: number;
   shopId: string;
   userId: string | undefined;
@@ -11,12 +12,15 @@ interface VoteButtonsProps {
   className?: string;
 }
 
-export default function VoteButtons({initialVotes, shopId, userId, setShowUserNotLoggedIn, className = ""}: VoteButtonsProps) {
+export default function VoteButtons({defaultUserVote, initialVotes, shopId, userId, setShowUserNotLoggedIn, className = ""}: VoteButtonsProps) {
   const [votes, setVotes] = useState(initialVotes);
-  const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
+  const [userVote, setUserVote] = useState<"up" | "down" | null>(defaultUserVote === 1 ? "up" : defaultUserVote === -1 ? "down" : null);
 
-  function handleVote(voteType: "up" | "down") {
+  console.log(defaultUserVote);
+  async function handleVote(voteType: "up" | "down") {
     let newVotes = votes;
+    const oldUserVote = userVote;
+    let sentVote = 0;
 
     if (!userId) {
       setShowUserNotLoggedIn(true);
@@ -28,15 +32,25 @@ export default function VoteButtons({initialVotes, shopId, userId, setShowUserNo
     } else if (userVote === "down" && voteType === "up") {
       newVotes = votes + 2;
       setUserVote("up");
+      sentVote = 1;
     } else if (userVote === "up" && voteType === "down") {
       newVotes = votes - 2;
       setUserVote("down");
+      sentVote = -1;
     } else {
       newVotes = voteType === "up" ? votes + 1 : votes - 1;
       setUserVote(voteType);
+      sentVote = voteType === "up" ? 1 : -1;
     }
 
-    voteAltShop(shopId, userId, newVotes - votes);
+    try {
+      // send either 1, -1 or 0
+      await voteAltShop(shopId, sentVote);
+    } catch (e) {
+      setUserVote(oldUserVote);
+      console.error(`error`, e);
+      return;
+    }
     setVotes(newVotes);
     // onVoteChange?.(newVotes);
   };

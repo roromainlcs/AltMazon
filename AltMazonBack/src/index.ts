@@ -16,6 +16,7 @@ const start = async () => {
   try {
     await fastify.register(altShopRoutes);
     await fastify.register(productsRoutes);
+    await fastify.register(authRoutes);
     fastify.addHook('preHandler', (req, res, done) => {
       res.header("Access-Control-Allow-Origin", "http://localhost:5173");
       res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

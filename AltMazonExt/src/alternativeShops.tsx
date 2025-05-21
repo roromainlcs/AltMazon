@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Info from './assets/info.tsx';
 import VoteButtons from './score';
 import './styles/alternativeShops.css';
-import { getAltShopList, addProduct, IAltShop, addAltShop } from './backRequest';
+import { getAltShopList, addProduct, IAltShop, addAltShop, getUserVotes } from './backRequest';
 import { IItemData } from './getItemData';
 
 interface AddAltShopFormProps {
@@ -11,6 +11,7 @@ interface AddAltShopFormProps {
 }
 
 interface DisplayAltShopListProps {
+  defaultUserVotes: { [key: string]: number };
   altShopList: IAltShop[];
   setShowAddAltShop: React.Dispatch<React.SetStateAction<boolean>>;
   userId: string | undefined;
@@ -49,7 +50,7 @@ function getShopName(link: string): string {
   return url.hostname.slice(url.hostname.indexOf('.') + 1);
 }
 
-function DisplayAltShopList({ altShopList, setShowAddAltShop, userId, setShowUserNotLoggedIn }: DisplayAltShopListProps) {
+function DisplayAltShopList({ defaultUserVotes, altShopList, setShowAddAltShop, userId, setShowUserNotLoggedIn }: DisplayAltShopListProps) {
   return (
     <>
       <div className='shop-list-header'>
@@ -65,7 +66,7 @@ function DisplayAltShopList({ altShopList, setShowAddAltShop, userId, setShowUse
             <div key={index} className='shop-list-item'>
               <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer'>{getShopName(shop.link)}</a></div>
               <div className="shop-list-item-price">{shop.price}</div>
-              <VoteButtons initialVotes={shop.score} shopId={shop.id} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
+              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
             </div>
           ))
         }
@@ -80,12 +81,21 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
   const [showAddAltShop, setShowAddAltShop] = useState<boolean>(false);
   const [showUserNotLoggedIn, setShowUserNotLoggedIn] = useState<boolean>(false);
   const [warningClassName, setWarningClassName] = useState<string>('user-not-logged-in');
+  const [defaultUserVotes, setDefaultUserVotes] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     async function loadAltShopList() {
       try {
         const data = await getAltShopList(itemData.asin);
+        const votes: [] = await getUserVotes(itemData.asin);
+        console.log("votes", votes);
+        console.log("data", data);
+        const votesDict: { [key: string]: number } = votes.reduce((acc, { id, vote }) => {
+          acc[id] = vote;
+          return acc;
+        }, {} as { [key: string]: number });
         setAltShopList(data);
+        setDefaultUserVotes(votesDict);
       } catch (e: unknown) {
         // if product not found, add it to the database
         if (e instanceof Error && e.message === "Product not found") {
@@ -128,7 +138,7 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
         {
           altShopList == null && <p>Loading...</p>
           ||
-          <DisplayAltShopList altShopList={altShopList as IAltShop[]} setShowAddAltShop={setShowAddAltShop} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />
+          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]} setShowAddAltShop={setShowAddAltShop} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />
         }
           <p className={warningClassName} onClick={() => setWarningClassName('user-not-logged-in')}>You need to be logged in to participate :(</p>
       </div>

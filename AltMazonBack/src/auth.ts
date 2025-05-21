@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from './clients';
+import { verifyIdToken } from './preHandlers';
+import { access } from 'fs';
 
 
 type OAuthTokenResponse = {
@@ -10,6 +12,8 @@ type OAuthTokenResponse = {
   token_type: string;
   refresh_token?: string;
 };
+
+let idTokenArray: string[] = [];
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/api/auth', async (req, reply) => {
@@ -40,12 +44,15 @@ export async function authRoutes(fastify: FastifyInstance) {
           access_token: access_token,
           expires_in: expires_in,
           refresh_token: refresh_token,
+          id_token: id_token,
         } = (data) as OAuthTokenResponse;
-
+        idTokenArray.push(id_token);
         return reply.send({
             access_token,
             expires_at: now + expires_in,
             refresh_token,
+            id_token,
+            
           },
         );
       }
@@ -57,17 +64,26 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // need to verify if userId is valid with google verification
+  // check if user exists, if not create user
+  // id is id_token
   fastify.post('/api/user', async (req, reply) => {
     const { id } = req.body as { id: string };
 
+    //console.log('User id:', id);
     if (!id)
-      return reply.status(400).send({ error: 'No user id provided' });
+      return reply.status(400).send({ error: id ? 'No user id provided' : 'No access token provided' });
+    if (idTokenArray.includes(id))
+      idTokenArray = idTokenArray.filter(e => e !== id);
+    else
+      return reply.status(403).send({ error: 'Wrong token expired' });
     try {
-      if ((prisma.user.findUnique({ where: { id } })) !== undefined)
+      const newUser = await prisma.user.findUnique({ where: { id: id } });
+      if (newUser !== null) {
+        console.log(newUser);
         return reply.send( { message: 'User exists' });
+      }
       const user = await prisma.user.create({
-        data: { id },
+        data: { id: id },
       });
       return reply.send({ message: 'User created' });
     } catch (error) {

@@ -22,32 +22,55 @@ interface IProduct {
 
 interface OAuthTokenResponse {
 	access_token: string;
+	id_token: string;
 	expires_at: number;
 	refresh_token?: string;
 };
 
+const backendHeaders = {
+  "Content-Type": "application/json",
+  "authorization": `Bearer ${localStorage.getItem("id_token")}`
+};
+
+export async function addUser() {
+  const res = await fetch(`${backend_url}/user`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: localStorage.getItem("id_token"),
+    })
+  });
+  if (!res.ok)
+    throw new Error("Error adding user");
+  else
+    console.log(await res.json());
+}
+
 export async function codeAuth(code: string) {
   const res = await fetch(`${backend_url}/auth`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: backendHeaders,
     body: JSON.stringify({
       code
     })
   });
-  if (!res.ok) {
+  if (!res.ok)
     throw new Error("Error getting tokens");
-  }
+
   const tokens: OAuthTokenResponse = await res.json();
   // console.log("tokens:", tokens);
-  if (tokens.refresh_token)
-    localStorage.setItem("refresh_token", tokens.refresh_token);
-  else
+  if (!tokens.refresh_token) {
     console.error('No refresh token given');
+    return;
+  }
+  localStorage.setItem("refresh_token", tokens.refresh_token);
+  localStorage.setItem("id_token", tokens.id_token);
   localStorage.setItem("access_token", tokens.access_token);
   localStorage.setItem("expires_at", (tokens.expires_at.toString()));
-
+  // add user to backend
+  addUser();
 }
 
 export async function getProduct(asin: string): Promise<IProduct> {
@@ -62,9 +85,7 @@ export async function addProduct(asin: string, name: string, brand: string) {
   console.log("adding product:", asin, name, brand);
   const res = await fetch(`${backend_url}/product`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: backendHeaders,
     body: JSON.stringify({
       asin,
       name,
@@ -91,9 +112,7 @@ export async function getAltShopList(asin: string): Promise<IAltShop[]> {
 export async function addAltShop(asin: string, link: string, price: number) {
   const res = await fetch(`${backend_url}/altshop`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: backendHeaders,
     body: JSON.stringify({
       asin,
       link,
@@ -114,18 +133,25 @@ export async function removeAltShop(id: string) {
   }
 }
 
-export async function voteAltShop(shopId: string, userid: string, vote: number) {
+export async function voteAltShop(shopId: string, vote: number) {
   const res = await fetch(`${backend_url}/vote`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: backendHeaders,
     body: JSON.stringify({
       shopId,
-      userid,
-      vote
+      newVote: vote
     })
   });
   if (!res.ok)
-    console.error(`Error voting alt shop: ${res.statusText}`);
+    throw new Error(`Error voting: ${res.statusText}`);
+}
+
+export async function getUserVotes(asin: string) {
+  const res = await fetch(`${backend_url}/votes/${asin}`, {
+    method: "GET",
+    headers: backendHeaders
+  });
+  if (!res.ok)
+    throw new Error(`Error fetching user votes: ${res.statusText}`);
+  return res.json();
 }
