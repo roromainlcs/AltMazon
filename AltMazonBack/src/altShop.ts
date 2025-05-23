@@ -26,14 +26,14 @@ export async function altShopRoutes(fastify: FastifyInstance) {
 
   // create alt shop
   fastify.post('/api/altshop', {preHandler: [verifyIdToken]}, async (request, reply) => {
-    const { asin, link, price } = request.body as { asin: string, link: string, price: number };
+    const { asin, link, price, currency } = request.body as { asin: string, link: string, price: number, currency: string };
 
     try {
       const product = await prisma.product.update({
         where: { asin },
         data: {
           altShops: {
-            create: { link, price },
+            create: { link, price, currency },
           },
         },
       });

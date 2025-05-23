@@ -85,14 +85,29 @@
   margin-left: auto;
 }
 
-.shop-form-input {
+.shop-form-input-price-wrapper {
+  width:150px;
+  margin-right: 0.5rem;
+}
+
+.shop-form-input-price-wrapper > input {
+  width: 120px;
+}
+
+.shop-form-input-price-wrapper > select {
+  width: 30px;
+}
+
+.shop-form-input-wrapper {
   display: flex;
   justify-content: space-around;
   padding: 6px 3rem;
 }
 
-.shop-form-input > input {
+.shop-form-input-wrapper > input, .shop-form-input-wrapper > div {
+  display: flex;
   margin-left: 1rem;
+  width: 150px;
 }
 
 .add-shop-header {

@@ -26,6 +26,7 @@ model AltShop {
   id          String   @id @default(cuid())
   link        String
   price       Float
+  currency   String @default("EUR")
   score       Int      @default(0)
   productAsin String
   product     Product  @relation(fields: [productAsin], references: [asin])

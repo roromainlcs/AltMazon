@@ -5,6 +5,19 @@ import './styles/alternativeShops.css';
 import { getAltShopList, addProduct, IAltShop, addAltShop, getUserVotes } from './backRequest';
 import { IItemData } from './getItemData';
 
+const  currencies = [
+  { code: 'EUR', symbol: '€' },
+  { code: 'USD', symbol: '$' },
+  { code: 'GBP', symbol: '£' },
+  { code: 'JPY', symbol: '¥' },
+  { code: 'AUD', symbol: 'A$' },
+  { code: 'CAD', symbol: 'C$' },
+  { code: 'CHF', symbol: 'CHF' },
+  { code: 'CNY', symbol: '¥' },
+  { code: 'SEK', symbol: 'kr' },
+  { code: 'SGD', symbol: 'S$' },
+];
+
 interface AddAltShopFormProps {
   itemData: IItemData;
   setShowAddAltShop: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,24 +34,34 @@ interface DisplayAltShopListProps {
 function AddAltShopForm({ itemData, setShowAddAltShop }: AddAltShopFormProps) {
   const [link, setLink] = useState<string>('');
   const [price, setPrice] = useState<number>(0);
+  const [currency, setCurrency] = useState<string>('EUR');
 
   return(
     <>
       <div className='add-shop-header'>
         <button className='shop-button' onClick={() => setShowAddAltShop(false)}>Go back</button>
         <button className='add-shop-button' onClick={async () => {
-          await addAltShop(itemData.asin, link, price);
+          await addAltShop(itemData.asin, link, price, currency);
           setShowAddAltShop(false);
         }}>Add</button>
       </div>
       <div className='shop-form'>
-        <div className='shop-form-input'>
+        <div className='shop-form-input-wrapper'>
           <label htmlFor='link'>Link</label>
           <input type='text' id='link' value={link} onChange={(e) => setLink(e.target.value)} />
         </div>
-        <div className='shop-form-input'>
+        <div className='shop-form-input-wrapper'>
           <label htmlFor='price'>Price</label>
-          <input type='number' id='price' value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} />
+          <div className='shop-form-input-price-wrapper'>
+            <input className="shop-form-input-price" type='number' id='price' value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} />
+            <select id='currency' value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {currencies.map((currenciesItem) => (
+                <option key={currenciesItem.code} value={currenciesItem.code}>
+                  {currenciesItem.symbol}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     </>
@@ -65,7 +88,7 @@ function DisplayAltShopList({ defaultUserVotes, altShopList, setShowAddAltShop, 
           altShopList.map((shop, index) => (
             <div key={index} className='shop-list-item'>
               <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer'>{getShopName(shop.link)}</a></div>
-              <div className="shop-list-item-price">{shop.price}</div>
+              <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
               <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
             </div>
           ))
@@ -82,6 +105,7 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
   const [showUserNotLoggedIn, setShowUserNotLoggedIn] = useState<boolean>(false);
   const [warningClassName, setWarningClassName] = useState<string>('user-not-logged-in');
   const [defaultUserVotes, setDefaultUserVotes] = useState<{ [key: string]: number }>({});
+  const [errorLoading, setErrorLoading] = useState<string>('');
 
   useEffect(() => {
     async function loadAltShopList() {
@@ -104,9 +128,12 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
             addProduct(itemData.asin, itemData.name, itemData.brandName);
           } catch (e: unknown) {
             console.error("error adding product:", e);
+            setErrorLoading("Error creating product");
           }
+        } else if (e instanceof Error && e.message == 'Failed to fetch') {
+          setErrorLoading("cannot access the server");
+          console.error("error loading alt shops:", e.message);
         }
-        console.error("error loading alt shops:", e);
       }
     }
     loadAltShopList();
@@ -136,6 +163,8 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
         </div>
       <div className='shop-list-wrapper'>
         {
+          altShopList == null && errorLoading != '' && <p>{errorLoading}</p>
+          ||
           altShopList == null && <p>Loading...</p>
           ||
           <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]} setShowAddAltShop={setShowAddAltShop} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />

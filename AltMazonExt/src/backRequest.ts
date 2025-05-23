@@ -5,6 +5,7 @@ export interface IAltShop {
   link: string;
   id: string;
   price: number;
+  currency: string;
   score: number;
   productAsin: string;
   createdAt: Date;
@@ -109,14 +110,15 @@ export async function getAltShopList(asin: string): Promise<IAltShop[]> {
   return res.json() as Promise<IAltShop[]>;
 }
 
-export async function addAltShop(asin: string, link: string, price: number) {
+export async function addAltShop(asin: string, link: string, price: number, currency: string) {
   const res = await fetch(`${backend_url}/altshop`, {
     method: "POST",
     headers: backendHeaders,
     body: JSON.stringify({
       asin,
       link,
-      price
+      price,
+      currency
     })
   });
   if (!res.ok) {
