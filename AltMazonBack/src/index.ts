@@ -25,7 +25,7 @@ const start = async () => {
         return res.send();
       done();
     })
-    await fastify.listen({ port: 3001 });
+    await fastify.listen({ port: 3001, host: '0.0.0.0'});
     console.log('Server listening on port 3001');
   } catch (err) {
     fastify.log.error(err);

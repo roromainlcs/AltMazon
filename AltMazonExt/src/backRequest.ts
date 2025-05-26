@@ -1,5 +1,4 @@
-
-export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api";
+export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api" //"https://altmazon-production.up.railway.app/api";
 
 export interface IAltShop {
   link: string;
