@@ -87,7 +87,7 @@ function DisplayAltShopList({ defaultUserVotes, altShopList, setShowAddAltShop, 
           ||
           altShopList.map((shop, index) => (
             <div key={index} className='shop-list-item'>
-              <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer'>{getShopName(shop.link)}</a></div>
+              <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer' title={shop.link}>{getShopName(shop.link)}</a></div>
               <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
               <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
             </div>
