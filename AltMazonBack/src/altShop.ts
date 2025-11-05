@@ -131,7 +131,8 @@ export async function altShopRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.get('/api/votes/:asin', {preHandler: [verifyIdToken]}, async (request, reply) => {
+  // get votes for alt shops of a product by asin
+  fastify.get('/api/votes/:asin', async (request, reply) => {
     const { asin } = request.params as { userId: string, asin: string };
     const userId = request.headers.authorization?.split(' ')[1];
 
