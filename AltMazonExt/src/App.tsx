@@ -3,6 +3,7 @@ import { getItemData, IItemData } from './getItemData'
 import { AltShops } from './alternativeShops'
 import { googleLogin, getUserInfo, IUserInfo} from './googleLogin'
 import './styles/App.css'
+import SignOutIcon from './assets/signout'
 
 function App() {
   const [itemData, setItemData] = useState<IItemData | null>(null);
@@ -11,15 +12,21 @@ function App() {
   // console.log(`userInfo:`, userInfo);
 
   useEffect(() => {
-    getItemData().then((data) => setItemData(data));
+    if (process.env.NODE_ENV == "development") {
+      setItemData({
+        name: "Advanced Clinicals Vitamin C, Advanced Brightening Cream, 16 oz (454 g)",
+        brandName: "Advanced Clinicals",
+        asin: "B01AMOTPI6",
+      });
+      // leave useEffect
+    } else
+      getItemData().then((data) => setItemData(data));
     try {
       getUserInfo().then((data) => {setUserInfo(data); console.log(`data:`, data)});
     } catch (error) {
       console.error(`error:`, error)
     }
   }, []);
-
-  // return <AltShops setSeeAltShop={setSeeAltShop} itemData={itemData as IItemData} />;
 
   if (!itemData) {
     return (
@@ -47,7 +54,7 @@ function App() {
         <div className='footer-wrapper'>
           <button className='shop-button' onClick={() => setSeeAltShop(true)}>See other shops</button>
           {
-            userInfo && <img src={userInfo.picture} className="profile-picture"></img>
+            userInfo && userLoggedIn(userInfo)
           ||
             <button className='shop-button' onClick={() => googleLogin(setUserInfo)}>login</button>
           }
@@ -57,6 +64,26 @@ function App() {
   } else {
     return <AltShops setSeeAltShop={setSeeAltShop} itemData={itemData} userId={userInfo?.sub} />;
   }
+}
+
+function signOut() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("id_token");
+  localStorage.removeItem("expires_at");
+  localStorage.removeItem("refresh_token");
+  window.location.reload();
+}
+
+function userLoggedIn(userInfo: IUserInfo) {
+  return (
+    <div className="profile-wrapper" onClick={signOut}>
+      <img src={userInfo.picture} className="profile-picture" />
+      <div className="signout-icon">
+        <SignOutIcon />
+      </div>
+      <div className='signout-text'>Sign out</div>
+    </div>
+  )
 }
 
 export default App

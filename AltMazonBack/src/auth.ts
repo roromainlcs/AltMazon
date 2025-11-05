@@ -66,8 +66,9 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // check if user exists, if not create user
   // id is id_token
-  fastify.post('/api/user', async (req, reply) => {
+  fastify.post('/api/user',{preHandler: [verifyIdToken]} , async (req, reply) => {
     const { id } = req.body as { id: string };
+    const userKey = req.userKey as string;
 
     //console.log('User id:', id);
     if (!id)
@@ -77,13 +78,13 @@ export async function authRoutes(fastify: FastifyInstance) {
     else
       return reply.status(403).send({ error: 'Wrong token expired' });
     try {
-      const newUser = await prisma.user.findUnique({ where: { id: id } });
-      if (newUser !== null) {
-        console.log(newUser);
-        return reply.send( { message: 'User exists' });
+      const user = await prisma.user.findUnique({ where: { id: userKey } });
+      if (user !== null) {
+        console.log(user);
+        return reply.send({ message: 'User already exists' });
       }
-      const user = await prisma.user.create({
-        data: { id: id },
+      await prisma.user.create({
+        data: { id: userKey },
       });
       return reply.send({ message: 'User created' });
     } catch (error) {

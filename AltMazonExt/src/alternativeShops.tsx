@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Info from './assets/info.tsx';
+import InfoIcon from './assets/info.tsx';
 import VoteButtons from './score';
 import './styles/alternativeShops.css';
 import { getAltShopList, addProduct, IAltShop, addAltShop, getUserVotes } from './backRequest';
@@ -159,7 +159,7 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
     <>
       <div className='shop-header'>
         <button className='shop-button' onClick={() => setSeeAltShop(false)}>Go back</button>
-        <Info />
+        <InfoIcon />
         </div>
       <div className='shop-list-wrapper'>
         {

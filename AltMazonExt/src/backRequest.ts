@@ -1,5 +1,5 @@
-//export const backend_url = "https://altmazon-production.up.railway.app/api";
-export const backend_url = "http://localhost:3001/api";
+
+export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "https://altmazon-production.up.railway.app/api";
 
 export interface IAltShop {
   link: string;
@@ -30,6 +30,10 @@ interface OAuthTokenResponse {
 
 const backendHeaders = {
   "Content-Type": "application/json",
+  "authorization": `Bearer ${localStorage.getItem("id_token")}`
+};
+
+const getBackendHeaders = {
   "authorization": `Bearer ${localStorage.getItem("id_token")}`
 };
 
@@ -151,7 +155,7 @@ export async function voteAltShop(shopId: string, vote: number) {
 export async function getUserVotes(asin: string) {
   const res = await fetch(`${backend_url}/votes/${asin}`, {
     method: "GET",
-    headers: backendHeaders
+    headers: getBackendHeaders
   });
   if (!res.ok)
     throw new Error(`Error fetching user votes: ${res.statusText}`);

@@ -15,6 +15,9 @@ export async function getToken() {
   const access_token = localStorage.getItem("access_token");
   const refresh_token = localStorage.getItem("refresh_token");
   const expires_at = Number(localStorage.getItem("expires_at"));
+  console.log("access_token:", access_token);
+  console.log("expires_at:", expires_at);
+  console.log("refresh_token:", refresh_token);
 
   if (access_token) {
     const nowInSeconds = Math.floor(Date.now() / 1000);
@@ -22,6 +25,7 @@ export async function getToken() {
 
     // expired or will expire in the next 60 seconds
     if (expires_at <= nowPlus60) {
+      console.log("Access token expired, refreshing...");
       const response = await fetch(`${backend_url}/auth/refresh`, {
         method: "POST",
         headers: {

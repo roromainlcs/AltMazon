@@ -64,15 +64,15 @@ export async function altShopRoutes(fastify: FastifyInstance) {
   // currVote is the current vote of the user, if 0: vote removed
   fastify.post('/api/vote', {preHandler: [verifyIdToken]}, async (request, reply) => {
     const { shopId, newVote } = request.body as { shopId: string, newVote: number };
-    const userId = request.headers.authorization?.split(' ')[1];
-    if (!userId)
-      return reply.status(401).send({ error: 'No userId provided' });
+    const userKey = request.userKey as string;
+    if (!userKey)
+      return reply.status(401).send({ error: 'No userKey provided' });
     else if (!shopId)
       return reply.status(400).send({ error: 'No shopId provided' });
     else if (newVote === undefined)
       return reply.status(400).send({ error: 'No newVote provided' });
 
-    const currVote = await prisma.vote.findUnique({ where: { userId_altShopId: { userId, altShopId: shopId } } });
+    const currVote = await prisma.vote.findUnique({ where: { userId_altShopId: { userId: userKey, altShopId: shopId } } });
     try {
       if (newVote < -1 || newVote > 1) {
         // invalid vote
@@ -100,7 +100,7 @@ export async function altShopRoutes(fastify: FastifyInstance) {
               increment: newVote,
             },
             Votes: {
-              create: { userId, value: newVote === 1 },
+              create: { userId: userKey, value: newVote === 1 },
             },
           },
         });
@@ -132,12 +132,12 @@ export async function altShopRoutes(fastify: FastifyInstance) {
   });
 
   // get votes for alt shops of a product by asin
-  fastify.get('/api/votes/:asin', async (request, reply) => {
-    const { asin } = request.params as { userId: string, asin: string };
-    const userId = request.headers.authorization?.split(' ')[1];
+  fastify.get('/api/votes/:asin', {preHandler: [verifyIdToken]}, async (request, reply) => {
+    const { asin } = request.params as { asin: string };
+    const userKey = request.userKey as string;
 
-    if (!userId)
-      return reply.status(401).send({ error: 'No userId provided' });
+    if (!userKey)
+      return reply.status(401).send({ error: 'Error getting userKey' });
     try {
       const product = await prisma.product.findUnique({
         where: { asin },
@@ -148,7 +148,7 @@ export async function altShopRoutes(fastify: FastifyInstance) {
       const votes = await Promise.all(
         product.altShops.map(async (shop) => {
           const vote = await prisma.vote.findUnique({
-            where: { userId_altShopId: { userId, altShopId: shop.id } },
+            where: { userId_altShopId: { userId: userKey, altShopId: shop.id } },
           });
           return {
             id: shop.id,
