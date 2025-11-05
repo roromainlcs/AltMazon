@@ -18,11 +18,19 @@ const start = async () => {
     await fastify.register(productsRoutes);
     await fastify.register(authRoutes);
     fastify.addHook('preHandler', (req, res, done) => {
-      res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      const origin = req.headers.origin;
+      // Allow local dev front-end. Adjust as needed for production origins.
+      if (origin === 'http://localhost:5173') {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
+      // Allow common headers including Authorization for bearer tokens
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      // Allow typical HTTP methods for API + preflight
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      // Short-circuit CORS preflight
       const isPreflight = /options/i.test(req.method);
       if (isPreflight)
-        return res.send();
+        return res.status(204).send();
       done();
     })
     await fastify.listen({ port: 3001, host: '0.0.0.0'});
