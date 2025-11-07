@@ -1,5 +1,4 @@
-
-export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "https://altmazon-production.up.railway.app/api";
+export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api"// : "https://altmazon-production.up.railway.app/api";
 
 export interface IAltShop {
   link: string;
@@ -28,13 +27,18 @@ interface OAuthTokenResponse {
 	refresh_token?: string;
 };
 
-const backendHeaders = {
-  "Content-Type": "application/json",
-  "authorization": `Bearer ${localStorage.getItem("id_token")}`
+function backendHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "authorization": `Bearer ${localStorage.getItem("id_token")}`
+  };
 };
 
-const getBackendHeaders = {
-  "authorization": `Bearer ${localStorage.getItem("id_token")}`
+
+function getBackendHeaders() {
+  return {
+    "authorization": `Bearer ${localStorage.getItem("id_token")}`
+  };
 };
 
 export async function addUser() {
@@ -44,7 +48,7 @@ export async function addUser() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      id: localStorage.getItem("id_token"),
+      id_token: localStorage.getItem("id_token"),
     })
   });
   if (!res.ok)
@@ -56,7 +60,7 @@ export async function addUser() {
 export async function codeAuth(code: string) {
   const res = await fetch(`${backend_url}/auth`, {
     method: "POST",
-    headers: backendHeaders,
+    headers: backendHeaders(),
     body: JSON.stringify({
       code
     })
@@ -90,7 +94,7 @@ export async function addProduct(asin: string, name: string, brand: string) {
   console.log("adding product:", asin, name, brand);
   const res = await fetch(`${backend_url}/product`, {
     method: "POST",
-    headers: backendHeaders,
+    headers: backendHeaders(),
     body: JSON.stringify({
       asin,
       name,
@@ -102,22 +106,23 @@ export async function addProduct(asin: string, name: string, brand: string) {
   }
 }
 
-export async function getAltShopList(asin: string): Promise<IAltShop[]> {
+export async function getAltShopList(asin: string): Promise<{data: IAltShop[], votes: []}> {
   const res = await fetch(`${backend_url}/altshops/${asin}`);
+  const resJson = await res.json();
   if (!res.ok) {
-    const resJson = await res.json();
     // console.log(res.status, resJson);
     if (res.status === 404)
       throw new Error(resJson.error);
     throw new Error("Error fetching alt shops");
   }
-  return res.json() as Promise<IAltShop[]>;
+  console.log("fetched data:", resJson)
+  return { data: resJson.altShops, votes: resJson.userVotes };
 }
 
 export async function addAltShop(asin: string, link: string, price: number, currency: string) {
   const res = await fetch(`${backend_url}/altshop`, {
     method: "POST",
-    headers: backendHeaders,
+    headers: backendHeaders(),
     body: JSON.stringify({
       asin,
       link,
@@ -142,7 +147,7 @@ export async function removeAltShop(id: string) {
 export async function voteAltShop(shopId: string, vote: number) {
   const res = await fetch(`${backend_url}/vote`, {
     method: "POST",
-    headers: backendHeaders,
+    headers: backendHeaders(),
     body: JSON.stringify({
       shopId,
       newVote: vote
@@ -155,7 +160,7 @@ export async function voteAltShop(shopId: string, vote: number) {
 export async function getUserVotes(asin: string) {
   const res = await fetch(`${backend_url}/votes/${asin}`, {
     method: "GET",
-    headers: getBackendHeaders
+    headers: getBackendHeaders()
   });
   if (!res.ok)
     throw new Error(`Error fetching user votes: ${res.statusText}`);

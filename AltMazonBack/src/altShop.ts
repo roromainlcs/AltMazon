@@ -1,23 +1,33 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from './clients';
-import { verifyIdToken, verifyAdmin } from './preHandlers';
+import { requireAuth, verifyAdmin } from './preHandlers';
 
 export async function altShopRoutes(fastify: FastifyInstance) {
   // get alt shops by asin
   fastify.get('/api/altshops/:asin', async (request, reply) => {
     const { asin } = request.params as { asin: string };
+    const userKey = request.userKey as string;
     try {
       console.log('Fetching product with asin:', asin);
       const product = await prisma.product.findUnique({
         where: { asin },
         include: { altShops: true },
       });
-
-      if (!product) {
+      if (!product)
         return reply.status(404).send({ error: 'Product not found' });
-      }
-      
-      return reply.send(product.altShops);
+      // get votes for each alt shops
+      const votes = await Promise.all(
+        product.altShops.map(async (shop) => {
+          const vote = await prisma.vote.findUnique({
+            where: { userId_altShopId: { userId: userKey, altShopId: shop.id } },
+          });
+          return {
+            id: shop.id,
+            vote: vote ? (vote.value ? 1 : -1) : 0,
+          };
+        })
+      );
+      return reply.send({ altShops: product.altShops, userVotes: votes });
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({ error: 'Error fetching product' });
@@ -25,7 +35,7 @@ export async function altShopRoutes(fastify: FastifyInstance) {
   });
 
   // create alt shop
-  fastify.post('/api/altshop', {preHandler: [verifyIdToken]}, async (request, reply) => {
+  fastify.post('/api/altshop', {preHandler: [requireAuth]}, async (request, reply) => {
     const { asin, link, price, currency } = request.body as { asin: string, link: string, price: number, currency: string };
 
     try {
@@ -62,7 +72,7 @@ export async function altShopRoutes(fastify: FastifyInstance) {
   // vote for alt shop
   // newVote is a score increment either -2, -1, 1, 2
   // currVote is the current vote of the user, if 0: vote removed
-  fastify.post('/api/vote', {preHandler: [verifyIdToken]}, async (request, reply) => {
+  fastify.post('/api/vote', {preHandler: [requireAuth]}, async (request, reply) => {
     const { shopId, newVote } = request.body as { shopId: string, newVote: number };
     const userKey = request.userKey as string;
     if (!userKey)
@@ -132,7 +142,7 @@ export async function altShopRoutes(fastify: FastifyInstance) {
   });
 
   // get votes for alt shops of a product by asin
-  fastify.get('/api/votes/:asin', {preHandler: [verifyIdToken]}, async (request, reply) => {
+  fastify.get('/api/votes/:asin', {preHandler: [requireAuth]}, async (request, reply) => {
     const { asin } = request.params as { asin: string };
     const userKey = request.userKey as string;
 

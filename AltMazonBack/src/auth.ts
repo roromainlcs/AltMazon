@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from './clients';
-import { verifyIdToken } from './preHandlers';
-import { access } from 'fs';
+import { getUserKey } from './preHandlers';
 
 
 type OAuthTokenResponse = {
@@ -39,7 +38,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
       const data = await response.json();
       if (response.ok) {
-        console.log(data);
+        //console.log(data);
         const {
           access_token: access_token,
           expires_in: expires_in,
@@ -66,17 +65,19 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // check if user exists, if not create user
   // id is id_token
-  fastify.post('/api/user',{preHandler: [verifyIdToken]} , async (req, reply) => {
-    const { id } = req.body as { id: string };
-    const userKey = req.userKey as string;
+  fastify.post('/api/user', async (req, reply) => {
+    const { id_token } = req.body as { id_token: string };
+    if (!id_token)
+      return reply.status(400).send({ error: 'No id_token provided' });
+    const userKey = await getUserKey(id_token);
 
     //console.log('User id:', id);
-    if (!id)
-      return reply.status(400).send({ error: id ? 'No user id provided' : 'No access token provided' });
-    if (idTokenArray.includes(id))
-      idTokenArray = idTokenArray.filter(e => e !== id);
+    if (!userKey)
+      return reply.status(400).send({ error: 'userKey could be extracted from id_token' });
+    if (idTokenArray.includes(id_token))
+      idTokenArray = idTokenArray.filter(e => e !== id_token);
     else
-      return reply.status(403).send({ error: 'Wrong token expired' });
+      return reply.status(403).send({ error: 'Wrong token' });
     try {
       const user = await prisma.user.findUnique({ where: { id: userKey } });
       if (user !== null) {
@@ -115,7 +116,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
       const data = await response.json();
       if (response.ok) {
-        console.log(data);
+        //console.log(data);
         const {
           access_token: access_token,
           expires_in: expires_in,

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from './clients';
-import { verifyIdToken, verifyAdmin } from './preHandlers';
+import { requireAuth, verifyAdmin } from './preHandlers';
 
 export async function productsRoutes(fastify: FastifyInstance) {
   // get product by asin (not useful atm)
@@ -25,7 +25,7 @@ export async function productsRoutes(fastify: FastifyInstance) {
   });
   
   // create product
-  fastify.post('/api/product', {preHandler: [verifyIdToken]}, async (request, reply) => {
+  fastify.post('/api/product', {preHandler: [requireAuth]}, async (request, reply) => {
     const { asin, name, brand} = request.body as { asin: string, name: string, brand: string };
 
     try {

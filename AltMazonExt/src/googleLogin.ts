@@ -64,7 +64,7 @@ export async function getUserInfo(): Promise<IUserInfo | undefined> {
   return await res.json();
 }
 
-export async function googleLogin(setUserInfo: React.Dispatch<React.SetStateAction<IUserInfo | undefined>>) {
+export async function googleLogin(setUserInfo: (userInfo: IUserInfo | undefined) => void) {
   try {
     if (!localStorage.getItem("access_token")) {
       const code = (await launchWebAuthFlow_and_getCode());

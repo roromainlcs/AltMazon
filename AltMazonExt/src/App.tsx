@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { getItemData, IItemData } from './getItemData'
+import { useEffect } from 'react'
+import { getItemData } from './getItemData'
 import { AltShops } from './alternativeShops'
+import { Info } from './info'
+import { AddAltShop } from './addAltShop'
 import { googleLogin, getUserInfo, IUserInfo} from './googleLogin'
 import './styles/App.css'
 import SignOutIcon from './assets/signout'
+import { useStore } from './viewStore'
 
 function App() {
-  const [itemData, setItemData] = useState<IItemData | null>(null);
-  const [seeAltShop, setSeeAltShop] = useState<boolean>(false);
-  const [userInfo, setUserInfo] = useState<IUserInfo | undefined>(undefined);
-  // console.log(`userInfo:`, userInfo);
+  const { view, itemData, setItemData, setUserInfo } = useStore();
 
   useEffect(() => {
     if (process.env.NODE_ENV == "development") {
@@ -18,7 +18,6 @@ function App() {
         brandName: "Advanced Clinicals",
         asin: "B01AMOTPI6",
       });
-      // leave useEffect
     } else
       getItemData().then((data) => setItemData(data));
     try {
@@ -26,9 +25,26 @@ function App() {
     } catch (error) {
       console.error(`error:`, error)
     }
-  }, []);
+  }, [setUserInfo, setItemData]);
 
-  if (!itemData) {
+  useEffect(() => {
+    localStorage.setItem('view', view);
+  }, [view])
+
+    return (
+      <>
+      {view === 'home' && <Home />}
+      {(view === 'altShops' && itemData != null) && <AltShops />}
+      {view === 'addAltShop' && <AddAltShop />}
+      {view === 'info' && <Info />}
+    </>
+  )
+}
+
+function Home() {
+  const { itemData, userInfo, setView, setUserInfo } = useStore();
+
+  if (itemData.brandName == '') {
     return (
       <div className="main-no-data">
         <p>Can't load data from outside Amazon...</p>
@@ -44,26 +60,22 @@ function App() {
     );
   }
 
-  if (!seeAltShop) {
-    return (
-      <>
-        <p className="pres-text">No shops listed ?<br/>click the links to search by name or brand (edit if needed).</p>
-        <p>Name: <a target="_blank" href={`https://www.google.com/search?q=${itemData.name}`}>{itemData.name}</a></p>
-        <p>Brand:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.brandName}`}>{itemData.brandName}</a></p>
-        <p>ASIN:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.asin}`}>{itemData.asin}</a></p>
-        <div className='footer-wrapper'>
-          <button className='shop-button' onClick={() => setSeeAltShop(true)}>See other shops</button>
-          {
-            userInfo && userLoggedIn(userInfo)
-          ||
-            <button className='shop-button' onClick={() => googleLogin(setUserInfo)}>login</button>
-          }
-        </div>
-      </>
-    )
-  } else {
-    return <AltShops setSeeAltShop={setSeeAltShop} itemData={itemData} userId={userInfo?.sub} />;
-  }
+  return(
+    <>
+      <p className="pres-text">No shops listed ?<br/>click the links to search by name or brand (edit if needed).</p>
+      <p>Name: <a target="_blank" href={`https://www.google.com/search?q=${itemData.name}`}>{itemData.name}</a></p>
+      <p>Brand:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.brandName}`}>{itemData.brandName}</a></p>
+      <p>ASIN:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.asin}`}>{itemData.asin}</a></p>
+      <div className='footer-wrapper'>
+        <button className='shop-button' onClick={() => setView('altShops')}>See other shops</button>
+        {
+          userInfo && userLoggedIn(userInfo)
+        ||
+          <button className='shop-button' onClick={() => googleLogin(setUserInfo)}>login</button>
+        }
+      </div>
+    </>
+  )
 }
 
 function signOut() {

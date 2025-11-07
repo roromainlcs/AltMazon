@@ -1,79 +1,29 @@
 import { useState, useEffect } from 'react';
 import InfoIcon from './assets/info.tsx';
 import VoteButtons from './score';
-import './styles/alternativeShops.css';
-import { getAltShopList, addProduct, IAltShop, addAltShop, getUserVotes } from './backRequest';
-import { IItemData } from './getItemData';
-
-const  currencies = [
-  { code: 'EUR', symbol: '€' },
-  { code: 'USD', symbol: '$' },
-  { code: 'GBP', symbol: '£' },
-  { code: 'JPY', symbol: '¥' },
-  { code: 'AUD', symbol: 'A$' },
-  { code: 'CAD', symbol: 'C$' },
-  { code: 'CHF', symbol: 'CHF' },
-  { code: 'CNY', symbol: '¥' },
-  { code: 'SEK', symbol: 'kr' },
-  { code: 'SGD', symbol: 'S$' },
-];
-
-interface AddAltShopFormProps {
-  itemData: IItemData;
-  setShowAddAltShop: React.Dispatch<React.SetStateAction<boolean>>;
-}
+import { getAltShopList, addProduct, IAltShop } from './backRequest';
+import { useStore } from './viewStore';
+import { currencies } from './lib/types'
 
 interface DisplayAltShopListProps {
   defaultUserVotes: { [key: string]: number };
   altShopList: IAltShop[];
-  setShowAddAltShop: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string | undefined;
   setShowUserNotLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function AddAltShopForm({ itemData, setShowAddAltShop }: AddAltShopFormProps) {
-  const [link, setLink] = useState<string>('');
-  const [price, setPrice] = useState<number>(0);
-  const [currency, setCurrency] = useState<string>('EUR');
-
-  return(
-    <>
-      <div className='add-shop-header'>
-        <button className='shop-button' onClick={() => setShowAddAltShop(false)}>Go back</button>
-        <button className='add-shop-button' onClick={async () => {
-          await addAltShop(itemData.asin, link, price, currency);
-          setShowAddAltShop(false);
-        }}>Add</button>
-      </div>
-      <div className='shop-form'>
-        <div className='shop-form-input-wrapper'>
-          <label htmlFor='link'>Link</label>
-          <input type='text' id='link' value={link} onChange={(e) => setLink(e.target.value)} />
-        </div>
-        <div className='shop-form-input-wrapper'>
-          <label htmlFor='price'>Price</label>
-          <div className='shop-form-input-price-wrapper'>
-            <input className="shop-form-input-price" type='number' id='price' value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} />
-            <select id='currency' value={currency} onChange={(e) => setCurrency(e.target.value)}>
-              {currencies.map((currenciesItem) => (
-                <option key={currenciesItem.code} value={currenciesItem.code}>
-                  {currenciesItem.symbol}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 function getShopName(link: string): string {
-  const url = new URL(link);
-  return url.hostname.slice(url.hostname.indexOf('.') + 1);
+  try {
+    const url = new URL(link);
+    return url.hostname.slice(url.hostname.indexOf('.') + 1);
+  } catch {
+    console.error("Invalid URL:", link);
+    return "Unknown Shop";
+  }
 }
 
-function DisplayAltShopList({ defaultUserVotes, altShopList, setShowAddAltShop, userId, setShowUserNotLoggedIn }: DisplayAltShopListProps) {
+function DisplayAltShopList({ defaultUserVotes, altShopList, setShowUserNotLoggedIn }: DisplayAltShopListProps) {
+  const { userInfo, setView } = useStore();
+
   return (
     <>
       <div className='shop-list-header'>
@@ -89,29 +39,29 @@ function DisplayAltShopList({ defaultUserVotes, altShopList, setShowAddAltShop, 
             <div key={index} className='shop-list-item'>
               <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer' title={shop.link}>{getShopName(shop.link)}</a></div>
               <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
-              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
+              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userInfo?.sub} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
             </div>
           ))
         }
       </div>
-      <button onClick={() => userId ? setShowAddAltShop(true) : setShowUserNotLoggedIn(true)}>+</button>
+      <button onClick={() => userInfo?.sub ? setView('addAltShop') : setShowUserNotLoggedIn(true)}>+</button>
     </>
   );
 }
 
-export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :React.Dispatch<React.SetStateAction<boolean>>, itemData: IItemData, userId: string | undefined}) {
+export function AltShops() {
+  const { itemData, setView } = useStore();
   const [altShopList, setAltShopList] = useState<IAltShop[] | null>(null);
-  const [showAddAltShop, setShowAddAltShop] = useState<boolean>(false);
   const [showUserNotLoggedIn, setShowUserNotLoggedIn] = useState<boolean>(false);
   const [warningClassName, setWarningClassName] = useState<string>('user-not-logged-in');
   const [defaultUserVotes, setDefaultUserVotes] = useState<{ [key: string]: number }>({});
   const [errorLoading, setErrorLoading] = useState<string>('');
-
+  
   useEffect(() => {
     async function loadAltShopList() {
       try {
-        const data = await getAltShopList(itemData.asin);
-        const votes: [] = await getUserVotes(itemData.asin);
+        const { data, votes } = await getAltShopList(itemData.asin);
+        //const votes: [] = await getUserVotes(itemData.asin);
         console.log("votes", votes);
         console.log("data", data);
         const votesDict: { [key: string]: number } = votes.reduce((acc, { id, vote }) => {
@@ -136,6 +86,13 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
         }
       }
     }
+    if (itemData.asin === 'none') {
+      console.log("huhooooo");
+      setView('home');
+    } else if (itemData.asin === '') {
+      console.log("huhooooo");
+      setView('home');
+    }
     loadAltShopList();
   }, [itemData]);
 
@@ -149,17 +106,11 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
     }
   }, [showUserNotLoggedIn]);
 
-  if (showAddAltShop) {
-    return (
-      <AddAltShopForm itemData={itemData} setShowAddAltShop={setShowAddAltShop} />
-    );
-  }
-
   return (
     <>
       <div className='shop-header'>
-        <button className='shop-button' onClick={() => setSeeAltShop(false)}>Go back</button>
-        <InfoIcon />
+        <button className='shop-button' onClick={() => setView('home')}>Go back</button>
+        <button className="info-button" onClick={() => setView('info')}><InfoIcon /></button>
         </div>
       <div className='shop-list-wrapper'>
         {
@@ -167,7 +118,7 @@ export function AltShops({ setSeeAltShop, itemData, userId }: {setSeeAltShop :Re
           ||
           altShopList == null && <p>Loading...</p>
           ||
-          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]} setShowAddAltShop={setShowAddAltShop} userId={userId} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />
+          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />
         }
           <p className={warningClassName} onClick={() => setWarningClassName('user-not-logged-in')}>You need to be logged in to participate :(</p>
       </div>

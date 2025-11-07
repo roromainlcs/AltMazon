@@ -42,10 +42,12 @@
   justify-content: center;
   justify-content: space-between;
   background-color: #303030;
+  border-radius: 10px 10px 0 0;
 }
 
 .shop-list-header > div {
   text-align: center;
+  user-select: none;
 }
 
 .shop-list-item-name {
@@ -66,6 +68,23 @@
 .shop-list-item-name:hover {
   transform: scale(1.2);
   white-space: normal;
+}
+
+.info-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  outline: none !important;
+}
+
+.info-button svg {
+  transition: transform 0.2s ease-in-out;
+}
+
+.info-button:hover svg {
+  transform: scale(1.2);
 }
 
 .info-svg {
