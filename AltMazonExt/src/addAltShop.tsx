@@ -45,6 +45,7 @@ export function AddAltShop() {
     }
     setView('altShops');
   }
+
   return (
     <div className='add-shop-container'>
       <div className='add-shop-header'>

@@ -40,12 +40,17 @@ export async function preHandlerGlobal(req: FastifyRequest, reply: FastifyReply)
     return reply.status(204).send();
   // userKey extraction
   const idToken = req.headers.authorization?.split(' ')[1];
+  //console.log('Extracted idToken:', idToken);
   if (!idToken || idToken == 'null')
     return;
   try {
     const userKey = await getUserKey(idToken);
     req.userKey = userKey;
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Token used too late')) {
+      console.error('Token expired', error);
+      return;
+    }
     console.error('Token verification error:', error);
     return reply.status(503).send({ error: 'Token verification error' });
   }

@@ -1,24 +1,6 @@
+import { IAltShop, IProduct } from "./lib/types";
+
 export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api"// : "https://altmazon-production.up.railway.app/api";
-
-export interface IAltShop {
-  link: string;
-  id: string;
-  price: number;
-  currency: string;
-  score: number;
-  productAsin: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface IProduct {
-  asin: string;
-  name: string;
-  brand: string;
-  altShops: IAltShop[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 interface OAuthTokenResponse {
 	access_token: string;
@@ -36,6 +18,9 @@ function backendHeaders() {
 
 
 function getBackendHeaders() {
+  const id_token = localStorage.getItem("id_token");
+  if (id_token == null)
+    return undefined;
   return {
     "authorization": `Bearer ${localStorage.getItem("id_token")}`
   };
@@ -107,7 +92,10 @@ export async function addProduct(asin: string, name: string, brand: string) {
 }
 
 export async function getAltShopList(asin: string): Promise<{data: IAltShop[], votes: []}> {
-  const res = await fetch(`${backend_url}/altshops/${asin}`);
+  const authHeaders = getBackendHeaders();
+  const res = await fetch(`${backend_url}/altshops/${asin}`, {
+    ...(authHeaders && { headers: authHeaders })
+  });
   const resJson = await res.json();
   if (!res.ok) {
     // console.log(res.status, resJson);
@@ -144,12 +132,12 @@ export async function removeAltShop(id: string) {
   }
 }
 
-export async function voteAltShop(shopId: string, vote: number) {
+export async function voteAltShop(altShopId: string, vote: number) {
   const res = await fetch(`${backend_url}/vote`, {
     method: "POST",
     headers: backendHeaders(),
     body: JSON.stringify({
-      shopId,
+      altShopId,
       newVote: vote
     })
   });

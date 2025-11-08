@@ -11,3 +11,24 @@ export const currencies = [
   { code: 'SEK', symbol: 'kr' },
   { code: 'SGD', symbol: 'S$' },
 ];
+
+
+export interface IAltShop {
+  link: string;
+  id: string;
+  price: number;
+  currency: string;
+  score: number;
+  productAsin: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IProduct {
+  asin: string;
+  name: string;
+  brand: string;
+  altShops: IAltShop[];
+  createdAt: Date;
+  updatedAt: Date;
+}

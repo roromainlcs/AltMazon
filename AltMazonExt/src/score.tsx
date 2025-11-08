@@ -16,7 +16,7 @@ export default function VoteButtons({defaultUserVote, initialVotes, shopId, user
   const [votes, setVotes] = useState(initialVotes);
   const [userVote, setUserVote] = useState<"up" | "down" | null>(defaultUserVote === 1 ? "up" : defaultUserVote === -1 ? "down" : null);
 
-  console.log(defaultUserVote);
+  //console.log(defaultUserVote);
   async function handleVote(voteType: "up" | "down") {
     let newVotes = votes;
     const oldUserVote = userVote;

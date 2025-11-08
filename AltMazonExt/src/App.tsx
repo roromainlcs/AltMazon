@@ -21,7 +21,7 @@ function App() {
     } else
       getItemData().then((data) => setItemData(data));
     try {
-      getUserInfo().then((data) => {setUserInfo(data); console.log(`data:`, data)});
+      getUserInfo().then((data) => {setUserInfo(data)});
     } catch (error) {
       console.error(`error:`, error)
     }

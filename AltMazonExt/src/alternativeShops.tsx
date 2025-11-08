@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import InfoIcon from './assets/info.tsx';
 import VoteButtons from './score';
-import { getAltShopList, addProduct, IAltShop } from './backRequest';
+import { getAltShopList, addProduct } from './backRequest';
 import { useStore } from './viewStore';
-import { currencies } from './lib/types'
+import { currencies, IAltShop } from './lib/types'
 import './styles/alternativeShops.css';
 
 interface DisplayAltShopListProps {
@@ -17,7 +17,7 @@ function getShopName(link: string): string {
     const url = new URL(link);
     return url.hostname.slice(url.hostname.indexOf('.') + 1);
   } catch {
-    console.error("Invalid URL:", link);
+    //console.error("Invalid URL:", link);
     return "Unknown Shop";
   }
 }
@@ -51,20 +51,19 @@ function DisplayAltShopList({ defaultUserVotes, altShopList, setShowUserNotLogge
 }
 
 export function AltShops() {
-  const { itemData, setView } = useStore();
-  const [altShopList, setAltShopList] = useState<IAltShop[] | null>(null);
+  const { itemData, setView, altShopList, setAltShopList, defaultUserVotes, setDefaultUserVotes } = useStore();
   const [showUserNotLoggedIn, setShowUserNotLoggedIn] = useState<boolean>(false);
   const [warningClassName, setWarningClassName] = useState<string>('user-not-logged-in');
-  const [defaultUserVotes, setDefaultUserVotes] = useState<{ [key: string]: number }>({});
   const [errorLoading, setErrorLoading] = useState<string>('');
   
   useEffect(() => {
     async function loadAltShopList() {
+      console.log(altShopList)
+      if (altShopList !== null || itemData.asin === '' || itemData.asin === 'none')
+        return;
       try {
         const { data, votes } = await getAltShopList(itemData.asin);
-        //const votes: [] = await getUserVotes(itemData.asin);
-        console.log("votes", votes);
-        console.log("data", data);
+        // deprecated: const votes: [] = await getUserVotes(itemData.asin);
         const votesDict: { [key: string]: number } = votes.reduce((acc, { id, vote }) => {
           acc[id] = vote;
           return acc;
@@ -91,11 +90,11 @@ export function AltShops() {
       console.log("huhooooo");
       setView('home');
     } else if (itemData.asin === '') {
-      console.log("huhooooo");
+      console.log("hihi");
       setView('home');
     }
     loadAltShopList();
-  }, [itemData, setView]);
+  }, [itemData, setView, altShopList, setAltShopList, setDefaultUserVotes]);
 
   useEffect(() => {
     if (showUserNotLoggedIn) {
