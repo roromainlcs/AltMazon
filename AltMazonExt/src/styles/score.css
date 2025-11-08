@@ -51,4 +51,5 @@
   font-size: 0.875rem;
   font-weight: 500;
   margin: 4px 0;
+  user-select: none;
 }

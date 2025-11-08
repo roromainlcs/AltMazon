@@ -1,0 +1,39 @@
+.add-shop-button {
+  display: block;
+}
+
+.shop-form-input-price-wrapper {
+  display: flex;
+  position: relative;
+}
+
+.select-currency {
+  width: 40px;
+  height: 36px;
+  padding: 4px;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(-10%, -50%);
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  outline: none;
+}
+
+.shop-form-input-wrapper {
+  display: flex;
+  padding: 6px 0;
+}
+
+.shop-form-input-wrapper label {
+  user-select: none;
+  font-weight: bold;
+}
+
+.add-shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+}

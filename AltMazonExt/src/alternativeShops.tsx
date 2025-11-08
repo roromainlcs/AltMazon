@@ -4,6 +4,7 @@ import VoteButtons from './score';
 import { getAltShopList, addProduct, IAltShop } from './backRequest';
 import { useStore } from './viewStore';
 import { currencies } from './lib/types'
+import './styles/alternativeShops.css';
 
 interface DisplayAltShopListProps {
   defaultUserVotes: { [key: string]: number };
@@ -94,7 +95,7 @@ export function AltShops() {
       setView('home');
     }
     loadAltShopList();
-  }, [itemData]);
+  }, [itemData, setView]);
 
   useEffect(() => {
     if (showUserNotLoggedIn) {

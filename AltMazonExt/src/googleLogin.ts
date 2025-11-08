@@ -15,9 +15,6 @@ export async function getToken() {
   const access_token = localStorage.getItem("access_token");
   const refresh_token = localStorage.getItem("refresh_token");
   const expires_at = Number(localStorage.getItem("expires_at"));
-  console.log("access_token:", access_token);
-  console.log("expires_at:", expires_at);
-  console.log("refresh_token:", refresh_token);
 
   if (access_token) {
     const nowInSeconds = Math.floor(Date.now() / 1000);
