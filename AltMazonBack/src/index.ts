@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { altShopRoutes } from './altShop';
+import { altShopRoutes } from './altShopRoutes';
 import { productsRoutes } from './product';
 import { authRoutes } from './auth';
 import { preHandlerGlobal } from './preHandlers';
