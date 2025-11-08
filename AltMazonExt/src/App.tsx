@@ -63,9 +63,9 @@ function Home() {
   return(
     <>
       <p className="pres-text">No shops listed ?<br/>click the links to search by name or brand (edit if needed).</p>
-      <p>Name: <a target="_blank" href={`https://www.google.com/search?q=${itemData.name}`}>{itemData.name}</a></p>
-      <p>Brand:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.brandName}`}>{itemData.brandName}</a></p>
-      <p>ASIN:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.asin}`}>{itemData.asin}</a></p>
+      <p>Name: <a target="_blank" href={`https://www.google.com/search?q=${itemData.name} -amazon.*`}>{itemData.name}</a></p>
+      <p>Brand:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.brandName} -amazon.*`}>{itemData.brandName}</a></p>
+      <p>ASIN:  <a target="_blank" href={`https://www.google.com/search?q=${itemData.asin} -amazon.*`}>{itemData.asin}</a></p>
       <div className='footer-wrapper'>
         <button className='shop-button' onClick={() => setView('altShops')}>See other shops</button>
         {
