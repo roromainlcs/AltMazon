@@ -138,6 +138,18 @@
   padding: 2px 0rem;
 }
 
+.shop-list-header-item {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.arrow-wrapper {
+  margin-right: 0.25rem;
+  height: 20px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }

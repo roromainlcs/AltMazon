@@ -48,7 +48,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         idTokenArray.push(id_token);
         return reply.send({
             access_token,
-            expires_at: now + expires_in - 5756,
+            expires_at: now + expires_in - 7756,
             refresh_token,
             id_token,
             

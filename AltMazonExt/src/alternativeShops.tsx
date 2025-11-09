@@ -8,7 +8,38 @@ import './styles/alternativeShops.css';
 
 interface DisplayAltShopListProps {
   defaultUserVotes: { [key: string]: number };
-  altShopList: IAltShop[];
+}
+
+const Arrow = ({ flipped }: { flipped?: boolean }) => {
+  return(
+    <svg style={{ transform: flipped ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease' }} width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 5L4 15H20L12 5Z" fill="currentColor" />
+    </svg>
+  );
+};
+
+function sortAltShopsByScore(list: IAltShop[] | null | undefined, order: 'asc' | 'desc' = 'asc'): IAltShop[] {
+  if (!list || list.length === 0) return [];
+  return [...list].sort((a, b) => (order === 'asc' ? a.score - b.score : b.score - a.score));
+}
+
+function sortAltShopsByName(list: IAltShop[] | null | undefined, order: 'asc' | 'desc' = 'asc'): IAltShop[] {
+  if (!list || list.length === 0) return [];
+  return [...list].sort((a, b) => {
+    const nameA = getShopName(a.link).toLowerCase();
+    const nameB = getShopName(b.link).toLowerCase();
+    const cmp = nameA.localeCompare(nameB);
+    return order === 'asc' ? cmp : -cmp;
+  });
+}
+
+function sortAltShopsByPrice(list: IAltShop[] | null | undefined, order: 'asc' | 'desc' = 'asc'): IAltShop[] {
+  if (!list || list.length === 0) return [];
+  return [...list].sort((a, b) => {
+    const pa = typeof a.price === 'number' ? a.price : Number.POSITIVE_INFINITY;
+    const pb = typeof b.price === 'number' ? b.price : Number.POSITIVE_INFINITY;
+    return order === 'asc' ? pa - pb : pb - pa;
+  });
 }
 
 function getShopName(link: string): string {
@@ -21,27 +52,57 @@ function getShopName(link: string): string {
   }
 }
 
-function DisplayAltShopList({ defaultUserVotes, altShopList}: DisplayAltShopListProps) {
-  const { userInfo, setView, setShowUserNotLoggedIn } = useStore();
+type SortByOption = 'score+' | 'score-' | 'name+' | 'name-' | 'price+' | 'price-';
+
+function DisplayAltShopList({ defaultUserVotes}: DisplayAltShopListProps) {
+  const { userInfo, setView, setShowUserNotLoggedIn, altShopList, setAltShopList } = useStore();
+  const [sortBy, setSortBy] = useState<SortByOption>('score+');
+
+  function changeAltShopListSortBy(newSortBy: SortByOption) {
+    let sortedList;
+    console.log("changing sort by to", newSortBy);
+    setSortBy(newSortBy);
+    switch (newSortBy) {
+      case 'score+':
+        sortedList = sortAltShopsByScore(altShopList);
+        break;
+      case 'score-':
+        sortedList = sortAltShopsByScore(altShopList, 'desc');
+        break;
+      case 'name+':
+        sortedList = sortAltShopsByName(altShopList);
+        break;
+      case 'name-':
+        sortedList = sortAltShopsByName(altShopList, 'desc');
+        break;
+      case 'price+':
+        sortedList = sortAltShopsByPrice(altShopList);
+        break;
+      case 'price-':
+        sortedList = sortAltShopsByPrice(altShopList, 'desc');
+        break;
+    }
+    setAltShopList(sortedList);
+  }
 
   return (
     <>
       <div className='shop-list-header'>
-        <div>Shop</div>
-        <div>Price</div>
-        <div>Score</div>
+        <div className='shop-list-header-item' onClick={() => { changeAltShopListSortBy(sortBy === 'name-' ? 'name+' : 'name-') }}><div className='arrow-wrapper'><Arrow flipped={sortBy !== 'name+'} /></div>Shop</div>
+        <div className='shop-list-header-item' onClick={() => { changeAltShopListSortBy(sortBy === 'price-' ? 'price+' : 'price-') }}><div className='arrow-wrapper'><Arrow flipped={sortBy !== 'price+'} /></div>Price</div>
+        <div className='shop-list-header-item' onClick={() => { changeAltShopListSortBy(sortBy === 'score-' ? 'score+' : 'score-') }}><div className='arrow-wrapper'><Arrow flipped={sortBy !== 'score+'} /></div>Score</div>
       </div>
       <div className='shop-list'>
         {
-          altShopList?.length == 0 && <div>No alternative shops found</div>
-          ||
-          altShopList.map((shop, index) => (
-            <div key={index} className='shop-list-item'>
-              <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer' title={shop.link}>{getShopName(shop.link)}</a></div>
-              <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
-              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id}/>
-            </div>
-          ))
+          (altShopList === null || altShopList?.length === 0)
+            ? <div>No alternative shops found</div>
+            : (altShopList || []).map((shop) => (
+                <div key={shop.id} className='shop-list-item'>
+                  <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer' title={shop.link}>{getShopName(shop.link)}</a></div>
+                  <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
+                  <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id}/>
+                </div>
+              ))
         }
       </div>
       <button className='add-button' onClick={() => userInfo?.sub ? setView('addAltShop') : setShowUserNotLoggedIn(true)}>+</button>
@@ -66,7 +127,7 @@ export function AltShops() {
           acc[id] = vote;
           return acc;
         }, {} as { [key: string]: number });
-        setAltShopList(data);
+        setAltShopList(sortAltShopsByScore(data, 'asc'));
         setDefaultUserVotes(votesDict);
       } catch (e: unknown) {
         // if product not found, add it to the database
@@ -116,7 +177,7 @@ export function AltShops() {
           ||
           altShopList == null && <p>Loading...</p>
           ||
-          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]}/>
+          <DisplayAltShopList defaultUserVotes={defaultUserVotes}/>
         }
           <p className={warningClassName} onClick={() => setWarningClassName('user-not-logged-in')}>You need to be logged in to participate :(</p>
       </div>
