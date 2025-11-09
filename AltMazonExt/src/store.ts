@@ -16,6 +16,8 @@ export type Store = {
   setAltShopList: (altShopList: IAltShop[] | null) => void;
   defaultUserVotes: { [key: string]: number };
   setDefaultUserVotes: (defaultUserVotes: { [key: string]: number }) => void;
+  showUserNotLoggedIn: boolean;
+  setShowUserNotLoggedIn: (show: boolean) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -29,4 +31,6 @@ export const useStore = create<Store>((set) => ({
   setAltShopList: (altShopList: IAltShop[] | null) => set({ altShopList }),
   defaultUserVotes: {},
   setDefaultUserVotes: (defaultUserVotes: { [key: string]: number }) => set({ defaultUserVotes }),
+  showUserNotLoggedIn: false,
+  setShowUserNotLoggedIn: (show: boolean) => set({ showUserNotLoggedIn: show }),
 }));

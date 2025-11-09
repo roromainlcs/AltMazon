@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './styles/addAltShop.css';
 import { addAltShop } from './backRequest';
-import { useStore } from './viewStore';
+import { useStore } from './store';
 import { currencies } from './lib/types'
 import Input from './components/input';
 

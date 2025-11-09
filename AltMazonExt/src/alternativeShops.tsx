@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import InfoIcon from './assets/info.tsx';
 import VoteButtons from './score';
 import { getAltShopList, addProduct } from './backRequest';
-import { useStore } from './viewStore';
+import { useStore } from './store.ts';
 import { currencies, IAltShop } from './lib/types'
 import './styles/alternativeShops.css';
 
 interface DisplayAltShopListProps {
   defaultUserVotes: { [key: string]: number };
   altShopList: IAltShop[];
-  setShowUserNotLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function getShopName(link: string): string {
@@ -22,8 +21,8 @@ function getShopName(link: string): string {
   }
 }
 
-function DisplayAltShopList({ defaultUserVotes, altShopList, setShowUserNotLoggedIn }: DisplayAltShopListProps) {
-  const { userInfo, setView } = useStore();
+function DisplayAltShopList({ defaultUserVotes, altShopList}: DisplayAltShopListProps) {
+  const { userInfo, setView, setShowUserNotLoggedIn } = useStore();
 
   return (
     <>
@@ -40,19 +39,18 @@ function DisplayAltShopList({ defaultUserVotes, altShopList, setShowUserNotLogge
             <div key={index} className='shop-list-item'>
               <div className="shop-list-item-name"><a href={shop.link} target='_blank' rel='noreferrer' title={shop.link}>{getShopName(shop.link)}</a></div>
               <div className="shop-list-item-price">{shop.price}{currencies.find(c => c.code === shop.currency)?.symbol || '?'}</div>
-              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id} userId={userInfo?.sub} setShowUserNotLoggedIn={setShowUserNotLoggedIn}/>
+              <VoteButtons defaultUserVote={defaultUserVotes[shop.id]} initialVotes={shop.score} shopId={shop.id}/>
             </div>
           ))
         }
       </div>
-      <button onClick={() => userInfo?.sub ? setView('addAltShop') : setShowUserNotLoggedIn(true)}>+</button>
+      <button className='add-button' onClick={() => userInfo?.sub ? setView('addAltShop') : setShowUserNotLoggedIn(true)}>+</button>
     </>
   );
 }
 
 export function AltShops() {
-  const { itemData, setView, altShopList, setAltShopList, defaultUserVotes, setDefaultUserVotes } = useStore();
-  const [showUserNotLoggedIn, setShowUserNotLoggedIn] = useState<boolean>(false);
+  const { itemData, setView, altShopList, setAltShopList, defaultUserVotes, setDefaultUserVotes, showUserNotLoggedIn, setShowUserNotLoggedIn } = useStore();
   const [warningClassName, setWarningClassName] = useState<string>('user-not-logged-in');
   const [errorLoading, setErrorLoading] = useState<string>('');
   
@@ -104,7 +102,7 @@ export function AltShops() {
         setWarningClassName('user-not-logged-in');
       }, 3000);
     }
-  }, [showUserNotLoggedIn]);
+  }, [showUserNotLoggedIn, setShowUserNotLoggedIn]);
 
   return (
     <>
@@ -118,7 +116,7 @@ export function AltShops() {
           ||
           altShopList == null && <p>Loading...</p>
           ||
-          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]} setShowUserNotLoggedIn={setShowUserNotLoggedIn} />
+          <DisplayAltShopList defaultUserVotes={defaultUserVotes} altShopList={altShopList as IAltShop[]}/>
         }
           <p className={warningClassName} onClick={() => setWarningClassName('user-not-logged-in')}>You need to be logged in to participate :(</p>
       </div>

@@ -1,20 +1,20 @@
 import { useState } from "react";
 import "./styles/score.css";
 import { voteAltShop } from "./backRequest";
+import { useStore } from "./store";
 
 interface VoteButtonsProps {
   defaultUserVote: number;
   initialVotes: number;
   shopId: string;
-  userId: string | undefined;
-  setShowUserNotLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-  // onVoteChange?: (newVote: number) => void;
   className?: string;
 }
 
-export default function VoteButtons({defaultUserVote, initialVotes, shopId, userId, setShowUserNotLoggedIn, className = ""}: VoteButtonsProps) {
+export default function VoteButtons({defaultUserVote, initialVotes, shopId, className = ""}: VoteButtonsProps) {
   const [votes, setVotes] = useState(initialVotes);
   const [userVote, setUserVote] = useState<"up" | "down" | null>(defaultUserVote === 1 ? "up" : defaultUserVote === -1 ? "down" : null);
+  const { setShowUserNotLoggedIn, userInfo } = useStore();
+  const userId = userInfo?.sub;
 
   //console.log(defaultUserVote);
   async function handleVote(voteType: "up" | "down") {

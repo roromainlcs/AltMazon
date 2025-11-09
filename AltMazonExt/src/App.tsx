@@ -6,7 +6,7 @@ import { AddAltShop } from './addAltShop'
 import { googleLogin, getUserInfo, IUserInfo} from './googleLogin'
 import './styles/App.css'
 import SignOutIcon from './assets/signout'
-import { useStore } from './viewStore'
+import { useStore } from './store'
 
 function App() {
   const { view, itemData, setItemData, setUserInfo } = useStore();
