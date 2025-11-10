@@ -60,7 +60,6 @@ function DisplayAltShopList({ defaultUserVotes}: DisplayAltShopListProps) {
 
   function changeAltShopListSortBy(newSortBy: SortByOption) {
     let sortedList;
-    console.log("changing sort by to", newSortBy);
     setSortBy(newSortBy);
     switch (newSortBy) {
       case 'score+':
@@ -117,7 +116,6 @@ export function AltShops() {
   
   useEffect(() => {
     async function loadAltShopList() {
-      console.log(altShopList)
       if (altShopList !== null || itemData.asin === '' || itemData.asin === 'none')
         return;
       try {
@@ -145,13 +143,6 @@ export function AltShops() {
         }
       }
     }
-    if (itemData.asin === 'none') {
-      console.log("huhooooo");
-      setView('home');
-    } else if (itemData.asin === '') {
-      console.log("hihi");
-      setView('home');
-    }
     loadAltShopList();
   }, [itemData, setView, altShopList, setAltShopList, setDefaultUserVotes]);
 
@@ -168,14 +159,14 @@ export function AltShops() {
   return (
     <>
       <div className='shop-header'>
-        <button className='shop-button' onClick={() => setView('home')}>Go back</button>
+        <button className='shop-button' onClick={() => setView('home')}>Home</button>
         <button className="info-button" onClick={() => setView('info')}><InfoIcon /></button>
         </div>
       <div className='shop-list-wrapper'>
         {
           altShopList == null && errorLoading != '' && <p>{errorLoading}</p>
           ||
-          altShopList == null && <p>Loading...</p>
+          (altShopList == null || itemData.asin === 'none' || itemData.asin === '') && <p>Loading...</p>
           ||
           <DisplayAltShopList defaultUserVotes={defaultUserVotes}/>
         }

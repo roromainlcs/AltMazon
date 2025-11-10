@@ -9,7 +9,16 @@ import SignOutIcon from './assets/signout'
 import { useStore } from './store'
 
 function App() {
-  const { view, itemData, setItemData, setUserInfo } = useStore();
+  const { view, itemData, setItemData, setUserInfo, setView } = useStore();
+
+  useEffect(() => {
+    chrome.storage.local.get("view").then((result) => {
+      if (result.view) {
+        setView(result.view);
+        chrome.storage.local.remove("view");
+      }
+    });
+  }, [setView]);
 
   useEffect(() => {
     if (process.env.NODE_ENV == "development") {
@@ -29,7 +38,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('view', view);
-  }, [view])
+  }, [view]);
 
     return (
       <>

@@ -46,7 +46,7 @@ export async function getToken() {
         console.error("request failed: ", data);
       }
     } else {
-      console.log("Access token is still valid");
+      //console.log("Access token is still valid");
       return access_token;
     }
   }

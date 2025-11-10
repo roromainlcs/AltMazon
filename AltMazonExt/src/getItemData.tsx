@@ -54,7 +54,7 @@ export async function getItemData(): Promise<IItemData> {
   }, _=>{
     const e = chrome.runtime.lastError;
     if (e !== undefined) {
-      console.log(tab.id, _, e);
+      console.error(tab.id, _, e);
     }
   });
   const itemData: IItemData = await new Promise((resolve) => {

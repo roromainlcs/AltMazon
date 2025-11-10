@@ -38,8 +38,6 @@ export async function addUser() {
   });
   if (!res.ok)
     throw new Error("Error adding user");
-  else
-    console.log(await res.json());
 }
 
 export async function codeAuth(code: string) {
@@ -76,7 +74,7 @@ export async function getProduct(asin: string): Promise<IProduct> {
 }
 
 export async function addProduct(asin: string, name: string, brand: string) {
-  console.log("adding product:", asin, name, brand);
+  //console.log("adding product:", asin, name, brand);
   const res = await fetch(`${backend_url}/product`, {
     method: "POST",
     headers: backendHeaders(),
@@ -103,7 +101,7 @@ export async function getAltShopList(asin: string): Promise<{data: IAltShop[], v
       throw new Error(resJson.error);
     throw new Error("Error fetching alt shops");
   }
-  console.log("fetched data:", resJson)
+  //console.log("fetched data:", resJson)
   return { data: resJson.altShops, votes: resJson.userVotes };
 }
 

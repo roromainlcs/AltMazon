@@ -10,7 +10,7 @@ export function Info() {
         <h2>How it works</h2>
         <p>hover the shop name to see the full link, you can upvote a shop if it is a good alternative or downvote it if it is  not. you need to be connected through google login to participate</p>
         <h2>Disclaimer</h2>
-        <p>AltMazon is community based which means all alternative shops here are added by other users, AltMazon does not hold responsibility for what happens once you click on a link</p>
+        <p>Altmazon is community based which means all alternative shops here are added by other users, Altmazon does not hold responsibility for what happens once you click on a link</p>
       </div>
     </div>
   );
