@@ -1,4 +1,4 @@
-import { codeAuth, backend_url } from "./backRequest";
+import { codeAuth, refreshAuthTokens } from "./backRequest";
 
 export interface IUserInfo {
   sub: string;
@@ -13,7 +13,6 @@ export interface IUserInfo {
 
 export async function getToken() {
   const access_token = localStorage.getItem("access_token");
-  const refresh_token = localStorage.getItem("refresh_token");
   const expires_at = Number(localStorage.getItem("expires_at"));
 
   if (access_token) {
@@ -22,33 +21,19 @@ export async function getToken() {
 
     // expired or will expire in the next 60 seconds
     if (expires_at <= nowPlus60) {
-      console.log("Access token expired, refreshing...");
-      const response = await fetch(`${backend_url}/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          refresh_token: refresh_token,
-        }),
-      });
-
-      if (response.ok) {
-        const { access_token, expires_at } = await response.json();
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("expires_at", expires_at);
-
-        console.log("Access token refreshed");
-        return access_token;
-
-      } else {
-        const data = await response.json();
-        console.error("request failed: ", data);
+      try {
+        await refreshAuthTokens();
+        const new_access_token = localStorage.getItem("access_token");
+        if (access_token === new_access_token) {
+           console.error("Failed to refresh tokens");
+            return undefined;
+        }
+      } catch (error) {
+        console.error("Error refreshing tokens:", error);
       }
-    } else {
-      //console.log("Access token is still valid");
-      return access_token;
+      console.log("Access token refreshed");
     }
+    return access_token;
   }
   return undefined;
 }

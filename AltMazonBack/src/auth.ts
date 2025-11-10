@@ -48,7 +48,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         idTokenArray.push(id_token);
         return reply.send({
             access_token,
-            expires_at: now + expires_in - 7756,
+            expires_at: now + expires_in,
             refresh_token,
             id_token,
             
@@ -113,17 +113,18 @@ export async function authRoutes(fastify: FastifyInstance) {
           grant_type: "refresh_token",
         }),
       });
-
       const data = await response.json();
       if (response.ok) {
         //console.log(data);
         const {
           access_token: access_token,
+          id_token: id_token,
           expires_in: expires_in,
         } = (data) as OAuthTokenResponse;
 
         return reply.send({
             access_token,
+            id_token,
             expires_at: now + expires_in,
           },
         );

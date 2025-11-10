@@ -152,3 +152,30 @@ export async function getUserVotes(asin: string) {
     throw new Error(`Error fetching user votes: ${res.statusText}`);
   return res.json();
 }
+
+export async function refreshAuthTokens() {
+  const refresh_token = localStorage.getItem("refresh_token");
+  
+  if (!refresh_token) {
+    console.error("No refresh token found");
+    return;
+  }
+  const res = await fetch(`${backend_url}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refresh_token: refresh_token,
+    })
+  });
+  
+  if (!res.ok) {
+    console.error("Error refreshing tokens");
+    return;
+  }
+  const tokens: OAuthTokenResponse = await res.json();
+  localStorage.setItem("access_token", tokens.access_token);
+  localStorage.setItem("id_token", tokens.id_token);
+  localStorage.setItem("expires_at", (tokens.expires_at.toString()));
+}
