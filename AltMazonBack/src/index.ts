@@ -3,7 +3,7 @@ import { altShopRoutes } from './altShopRoutes';
 import { productsRoutes } from './product';
 import { authRoutes } from './auth';
 import { preHandlerGlobal } from './preHandlers';
-import url from 'url';
+import rateLimit from '@fastify/rate-limit';
 
 const fastify = Fastify({ logger: true });
 
@@ -14,6 +14,7 @@ fastify.setNotFoundHandler((request, reply) => {
 // Start the server
 const start = async () => {
   try {
+    await fastify.register(rateLimit, rateLimiter);
     await fastify.register(altShopRoutes);
     await fastify.register(productsRoutes);
     await fastify.register(authRoutes);
@@ -25,6 +26,13 @@ const start = async () => {
     fastify.log.error(err);
     process.exit(1);
   }
+};
+
+const rateLimiter = {
+  max: 5, // 5 requests
+  timeWindow: '5000', // 5000 ms
+  // optional:
+  ban: 1, // temporary ban after 1 violations
 };
 
 start();

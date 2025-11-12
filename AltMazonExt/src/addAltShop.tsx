@@ -13,6 +13,7 @@ export function AddAltShop() {
   const [price, setPrice] = useState<string>('');
   const [currency, setCurrency] = useState<string>('EUR');
   const { itemData, setView } = useStore();
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   function validateAndSetPrice(value: string) {
     if ((value !== '' && !numberRegex.test(value)) || value.length > 8)
@@ -26,6 +27,7 @@ export function AddAltShop() {
   async function validateAndAddShop() {
     if (link.trim() === '' || link.indexOf('https') !== 0 || currency === '') {
       console.error('Invalid input:', { link, price, currency });
+      setErrorMessage('url must follow the format https://www.example.com');
       return;
     }
     
@@ -35,11 +37,14 @@ export function AddAltShop() {
     }
     catch (e) {
       if(e instanceof TypeError) {
-        alert('Please enter a valid URL.');
-        return;
+        console.error('Please enter a valid URL.');
       } else {
-        console.error('Error adding alternative shop:', e);
-        alert('There was an error adding the alternative shop. Please try again.');
+        if (e instanceof Error)
+          console.error('Error adding alternative shop:', e.message);
+        if (e instanceof Error && e.message.includes('link must match pattern')) {
+          setErrorMessage('url must follow the format https://www.example.com');
+        } else
+          setErrorMessage('There was an error adding the shop');
         return;
       }
     }
@@ -69,6 +74,7 @@ export function AddAltShop() {
           </div>
         </div>
       </div>
+      <p className='error-message'>{errorMessage}</p>
     </div>
   );
 }

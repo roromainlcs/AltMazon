@@ -117,7 +117,11 @@ export async function addAltShop(asin: string, link: string, price: number, curr
     })
   });
   if (!res.ok) {
-    throw new Error("Error adding alt shop");
+    //console.error("Error response:", await res.text());
+    const resJson = await res.json();
+    console.log("resJson:", resJson);
+    const msg = resJson.message;
+    throw new Error(msg || `Error adding alt shop: ${res.statusText}`);
   }
 }
 

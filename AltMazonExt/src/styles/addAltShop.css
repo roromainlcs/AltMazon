@@ -1,3 +1,6 @@
+/* .add-shop-container {
+} */
+
 .add-shop-button {
   display: block;
 }
@@ -36,4 +39,12 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 1rem;
+}
+
+.error-message {
+  color: #ed6c2d;
+  margin: 0;
+  font-size: 0.9rem;
+  width: 266px;
+  text-align: center;
 }
