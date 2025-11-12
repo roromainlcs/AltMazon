@@ -6,7 +6,6 @@ export interface IUserInfo {
   given_name: string;
   family_name: string;
   picture: string;
-  email: string;
   email_verified: boolean;
   locale: string;
 }
@@ -46,10 +45,12 @@ export async function getUserInfo(): Promise<IUserInfo | undefined> {
   return await res.json();
 }
 
-export async function googleLogin(setUserInfo: (userInfo: IUserInfo | undefined) => void) {
+export async function googleLogin(setUserInfo: (userInfo: IUserInfo | undefined) => void, googleOAuthClientId?: string) {
+  if (googleOAuthClientId !== undefined)
+    console.log("677777 ahhhhfvnfdiovpds")
   try {
     if (!localStorage.getItem("access_token")) {
-      const code = (await launchWebAuthFlow_and_getCode());
+      const code = (await launchWebAuthFlow_and_getCode(googleOAuthClientId));
       if (!code)
         throw { error: "No code" }
       await codeAuth(code);
@@ -63,9 +64,9 @@ export async function googleLogin(setUserInfo: (userInfo: IUserInfo | undefined)
   }
 }
 
-async function launchWebAuthFlow_and_getCode() {
+async function launchWebAuthFlow_and_getCode(googleOAuthClientId?: string) {
   const manifest = chrome.runtime.getManifest()
-  const { url } = generateBaseUrl_and_redirectUri()
+  const { url } = generateBaseUrl_and_redirectUri(googleOAuthClientId)
   if (!manifest.oauth2 || !manifest.oauth2.scopes) throw { error: "No scopes" }
   
   url.searchParams.set("response_type", "code")
@@ -86,17 +87,19 @@ async function launchWebAuthFlow_and_getCode() {
   return decodeURIComponent(encodedCode)
   }
 
-function generateBaseUrl_and_redirectUri() {
-const manifest = chrome.runtime.getManifest()
-if (!manifest.oauth2 || !manifest.oauth2.client_id) throw { error: "No scopes" }
+function generateBaseUrl_and_redirectUri(googleOAuthClientId?: string) {
+  const manifest = chrome.runtime.getManifest()
+  if (!manifest.oauth2 || !manifest.oauth2.client_id) throw { error: "No scopes" }
 
-// https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#redirecting
-const url = new URL("https://accounts.google.com/o/oauth2/auth")
+  const url = new URL("https://accounts.google.com/o/oauth2/auth")
 
-const redirectUri = chrome.identity.getRedirectURL("back")
+  if (googleOAuthClientId) {
+    url.searchParams.set("client_id", googleOAuthClientId)
+  } else {
+    url.searchParams.set("client_id", manifest.oauth2.client_id)
+    const redirectUri = chrome.identity.getRedirectURL("back")
+    url.searchParams.set("redirect_uri", redirectUri)
+  }
 
-url.searchParams.set("client_id", manifest.oauth2.client_id)
-url.searchParams.set("redirect_uri", redirectUri)
-
-return { url }
+  return { url }
 }
