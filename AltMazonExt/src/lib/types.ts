@@ -32,3 +32,13 @@ export interface IProduct {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface IUserInfo {
+  sub: string;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  email_verified: boolean;
+  locale: string;
+}

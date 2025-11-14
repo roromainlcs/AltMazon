@@ -40,12 +40,14 @@ export async function addUser() {
     throw new Error("Error adding user");
 }
 
-export async function codeAuth(code: string) {
+export async function codeAuth(code: string, verifier?: string, nonce?: string) {
   const res = await fetch(`${backend_url}/auth`, {
     method: "POST",
     headers: backendHeaders(),
     body: JSON.stringify({
-      code
+      code,
+      code_verifier: verifier,
+      nonce
     })
   });
   if (!res.ok)

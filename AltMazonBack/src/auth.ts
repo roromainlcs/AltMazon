@@ -16,10 +16,13 @@ let idTokenArray: string[] = [];
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/api/auth', async (req, reply) => {
-    const { code } = req.body as { code: string};
+    const { code, code_verifier, nonce } = req.body as { code: string, code_verifier: string, nonce: string };
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const now = Math.floor(Date.now() / 1000);
+
+    if (!code || !code_verifier || !nonce)
+      return reply.code(400).send({ error: "missing fields" });
 
     try {
       const response = await fetch("https://oauth2.googleapis.com/token", {
@@ -33,6 +36,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           client_secret: clientSecret,
           redirect_uri: "https://mkkabjpngekkemhmjbohnmjdbennicbd.chromiumapp.org/back",
           grant_type: "authorization_code",
+          code_verifier: code_verifier,
+          nonce: nonce,
         }),
       });
 
@@ -51,7 +56,6 @@ export async function authRoutes(fastify: FastifyInstance) {
             expires_at: now + expires_in,
             refresh_token,
             id_token,
-            
           },
         );
       }

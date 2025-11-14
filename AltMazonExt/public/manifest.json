@@ -7,7 +7,7 @@
     },
     "background": {
         "type": "module",
-        "service_worker": "altmazonServiceWorker.js"
+        "service_worker": "serviceWorker.js"
     },
     "action": {
         "default_popup": "index.html",
@@ -37,7 +37,8 @@
     "permissions": [
         "scripting",
         "identity",
-        "storage"
+        "storage",
+        "tabs"
     ],
     "host_permissions": [
         "https://*/*",
