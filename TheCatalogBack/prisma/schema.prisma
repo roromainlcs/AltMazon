@@ -15,8 +15,6 @@ datasource db {
 
 model Product {
   asin        String    @id
-  name        String
-  brand       String
   altShops    AltShop[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

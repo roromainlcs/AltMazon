@@ -26,11 +26,11 @@ export async function productsRoutes(fastify: FastifyInstance) {
   
   // create product
   fastify.post('/api/product', {preHandler: [requireAuth]}, async (request, reply) => {
-    const { asin, name, brand} = request.body as { asin: string, name: string, brand: string };
+    const { asin} = request.body as { asin: string };
 
     try {
       const product = await prisma.product.create({
-        data: { asin, name, brand },
+        data: { asin },
       });
       return reply.send(product);
     } catch (error) {

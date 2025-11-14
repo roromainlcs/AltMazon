@@ -1,6 +1,6 @@
 import { IAltShop, IProduct } from "./lib/types";
 
-export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api"// : "https://altmazon-production.up.railway.app/api";
+export const backend_url = process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : "http://localhost:3001/api"// : "https://thecatalog-production.up.railway.app/api";
 
 interface OAuthTokenResponse {
 	access_token: string;
@@ -75,15 +75,13 @@ export async function getProduct(asin: string): Promise<IProduct> {
   return res.json() as Promise<IProduct>;
 }
 
-export async function addProduct(asin: string, name: string, brand: string) {
-  //console.log("adding product:", asin, name, brand);
+export async function addProduct(asin: string) {
+  //console.log("adding product:", asin);
   const res = await fetch(`${backend_url}/product`, {
     method: "POST",
     headers: backendHeaders(),
     body: JSON.stringify({
       asin,
-      name,
-      brand
     })
   });
   if (!res.ok) {

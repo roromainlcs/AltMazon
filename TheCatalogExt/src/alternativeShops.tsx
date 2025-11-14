@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import InfoIcon from './assets/info.tsx';
-import VoteButtons from './score';
-import { getAltShopList, addProduct } from './backRequest';
+import VoteButtons from './score.tsx';
+import { getAltShopList, addProduct } from './backRequest.ts';
 import { useStore } from './store.ts';
-import { currencies, IAltShop } from './lib/types'
+import { currencies, IAltShop } from './lib/types.ts'
 import './styles/alternativeShops.css';
 
 interface DisplayAltShopListProps {
@@ -132,7 +132,7 @@ export function AltShops() {
         if (e instanceof Error && e.message === "Product not found") {
           setAltShopList([]);
           try {
-            addProduct(itemData.asin, itemData.name, itemData.brandName);
+            addProduct(itemData.asin);
           } catch (e: unknown) {
             console.error("error adding product:", e);
             setErrorLoading("Error creating product");

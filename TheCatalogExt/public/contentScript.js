@@ -1,11 +1,10 @@
 function injectButton() {
   const anchor = document.getElementById("buyNow_feature_div");
-  if (!anchor || document.getElementById("AltmazonBtn")) return;
+  if (!anchor || document.getElementById("TheCatalogBtn")) return;
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.id = "AltmazonBtn";
-  btn.textContent = "Open Altmazon shops";
-
+  btn.id = "TheCatalogBtn";
+  btn.textContent = "See other shops";
 btn.style.cssText = `
   background-color: #0892a5;
   color: #0f1111;
@@ -41,30 +40,3 @@ if (document.readyState === "loading") {
 } else {
   injectButton();
 }
-
-// function copyButtonStyle(fromElem, toElem) {
-//   const computed = window.getComputedStyle(fromElem);
-//   // Copy relevant visual properties
-//   const props = [
-//     "backgroundColor",
-//     "color",
-//     "border",
-//     "borderRadius",
-//     "padding",
-//     "fontSize",
-//     "fontWeight",
-//     "fontFamily",
-//     "textTransform",
-//     "textAlign",
-//     "cursor",
-//     "boxShadow",
-//     "width",
-//     "height",
-//     "display",
-//     "alignItems",
-//     "justifyContent"
-//   ];
-//   for (const prop of props) {
-//     toElem.style[prop] = computed.getPropertyValue(prop);
-//   }
-// }

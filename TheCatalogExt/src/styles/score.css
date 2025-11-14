@@ -43,8 +43,8 @@
 }
 
 .vote-button.down.active {
-  color: #ef4444; /* red-500 */
-  background-color: #404040; /* red-50 */
+  color: #e72f2f;
+  background-color: #404040;
 }
 
 .vote-count {
